@@ -1,19 +1,58 @@
 workflows:
-  android-workflow:
-    name: eGaming Android Build
-    max_build_duration: 30
+  android-release-apk:
+    name: eGaming - Android Release APK
+    max_build_duration: 60
+    instance_type: linux_x2
     environment:
       flutter: stable
+      java: 17
+      vars:
+        PACKAGE_NAME: "com.egaming.app"
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+        - $HOME/.pub-cache
+
     scripts:
-      - name: إنشاء مجلدات المنصات (android) تلقائيًا
+      - name: Show tool versions
         script: |
-          flutter create --platforms=android --org com.egaming.app .
-      - name: تحميل الحزم المطلوبة
+          flutter --version
+          java -version
+
+      - name: Regenerate Gradle wrapper jar
+        script: |
+          # gradle-wrapper.jar is a binary file and is intentionally not committed
+          # to the repository. It is regenerated here using the Gradle that ships
+          # with the Codemagic Flutter image, so the build is fully reproducible
+          # from source control without storing binaries in git.
+          cd android
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            gradle wrapper --gradle-version 8.10.2
+          fi
+          cd ..
+
+      - name: Get Flutter packages
         script: |
           flutter pub get
-      - name: بناء ملف APK
+
+      - name: Flutter analyze
         script: |
-          flutter build apk --release
+          flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Build release APK
+        script: |
+          flutter build apk --release --no-tree-shake-icons
+
     artifacts:
-      - build/app/outputs/**/*.apk
-      - build/app/outputs/**/mapping.txt
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/mapping/release/*.txt
+
+    # Optional: uncomment and set your own email to get notified when the build
+    # finishes. Left disabled by default so the workflow builds with zero setup.
+    # publishing:
+    #   email:
+    #     recipients:
+    #       - your-email@example.com
+    #     notify:
+    #       success: true
+    #       failure: true

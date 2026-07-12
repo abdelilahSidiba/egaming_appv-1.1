@@ -36,7 +36,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final file = await _backupService.createBackup();
       if (!mounted) return;
-      await Share.shareXFiles([XFile(file.path)], text: 'نسخة احتياطية من eGaming');
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], text: 'نسخة احتياطية من eGaming'),
+      );
       _showSnack('تم إنشاء النسخة الاحتياطية بنجاح.');
     } catch (e) {
       _showSnack('حدث خطأ أثناء إنشاء النسخة الاحتياطية: $e');

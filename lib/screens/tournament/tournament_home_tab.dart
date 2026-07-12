@@ -51,8 +51,6 @@ class _IdentityCard extends StatelessWidget {
         return '🟢 البطولة جارية';
       case TournamentStatus.finished:
         return '🔵 انتهت البطولة';
-      default:
-        return '⚪ حالة غير معروفة';
     }
   }
 

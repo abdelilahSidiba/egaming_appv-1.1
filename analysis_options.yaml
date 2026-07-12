@@ -1,0 +1,5 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # يمكن إضافة أو تعطيل قواعد إضافية هنا لاحقًا حسب أسلوب الفريق.
