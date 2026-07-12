@@ -1,0 +1,19 @@
+workflows:
+  android-workflow:
+    name: eGaming Android Build
+    max_build_duration: 30
+    environment:
+      flutter: stable
+    scripts:
+      - name: إنشاء مجلدات المنصات (android) تلقائيًا
+        script: |
+          flutter create --platforms=android --org com.egaming.app .
+      - name: تحميل الحزم المطلوبة
+        script: |
+          flutter pub get
+      - name: بناء ملف APK
+        script: |
+          flutter build apk --release
+    artifacts:
+      - build/app/outputs/**/*.apk
+      - build/app/outputs/**/mapping.txt
