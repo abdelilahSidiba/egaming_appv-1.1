@@ -1,0 +1,62 @@
+workflows:
+  android-release-apk:
+    name: eGaming - Android Release APK
+    max_build_duration: 90
+    # linux_x2 requires billing enabled (paid/team account). mac_mini_m2 is the
+    # instance type covered by Codemagic's free personal plan (500 free minutes/
+    # month) and can build Android APKs just fine since Flutter's Android
+    # toolchain runs the same way on macOS build machines.
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 17
+      vars:
+        PACKAGE_NAME: "com.egaming.app"
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+        - $HOME/.pub-cache
+
+    scripts:
+      - name: Show tool versions
+        script: |
+          flutter --version
+          java -version
+
+      - name: Regenerate Gradle wrapper jar
+        script: |
+          # gradle-wrapper.jar is a binary file and is intentionally not committed
+          # to the repository. It is regenerated here using the Gradle that ships
+          # with the Codemagic Flutter image, so the build is fully reproducible
+          # from source control without storing binaries in git.
+          cd android
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            gradle wrapper --gradle-version 8.10.2
+          fi
+          cd ..
+
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+
+      - name: Flutter analyze
+        script: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Build release APK
+        script: |
+          flutter build apk --release --no-tree-shake-icons
+
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/mapping/release/*.txt
+
+    # Optional: uncomment and set your own email to get notified when the build
+    # finishes. Left disabled by default so the workflow builds with zero setup.
+    # publishing:
+    #   email:
+    #     recipients:
+    #       - your-email@example.com
+    #     notify:
+    #       success: true
+    #       failure: true
